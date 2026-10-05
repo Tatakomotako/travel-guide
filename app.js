@@ -27,6 +27,8 @@
   }catch{storageAvailable=false;}
   const persist=()=>{try{localStorage.setItem(key,JSON.stringify(saved));storageAvailable=true;}catch{storageAvailable=false;}};
   const done=()=>[...checkIds].filter(id=>saved[id]===true).length;
+  const materialPlural=new Intl.PluralRules('ru');
+  const materialCount=n=>n+' '+({one:'материал',few:'материала',many:'материалов',other:'материала'}[materialPlural.select(n)]);
   const route=()=>{let hash=location.hash.slice(1)||'guide';const cut=hash.indexOf('?');return {path:cut<0?hash:hash.slice(0,cut),params:new URLSearchParams(cut<0?'':hash.slice(cut+1))};};
   const heading=(title,summary,eyebrow='ГИД В КАРМАНЕ')=>'<header class="page-heading"><p class="eyebrow">'+esc(eyebrow)+'</p><h1>'+esc(title)+'</h1>'+(summary?'<p class="lead">'+esc(summary)+'</p>':'')+'</header>';
   const back=(url,text)=>'<a class="back" href="'+esc(url)+'">'+icon('back')+esc(text)+'</a>';
@@ -57,7 +59,7 @@
     html+='<div class="topic-grid">'+d.groups[scope].map(([id,title,summary],i)=>{
       const arts=d.articles.filter(a=>a.scope===scope&&a.group===id);
       const url=arts.length===1?'#article/'+arts[0].id:'#chapter/'+scope+'/'+id;
-      return '<a class="topic-card" href="'+url+'"><span class="topic-number">'+String(i+1).padStart(2,'0')+'</span><h2>'+esc(title)+'</h2><p>'+esc(summary)+'</p><span class="topic-bottom">'+arts.length+' '+(arts.length===1?'материал':'материала')+icon('arrow')+'</span></a>';
+      return '<a class="topic-card" href="'+url+'"><span class="topic-number">'+String(i+1).padStart(2,'0')+'</span><h2>'+esc(title)+'</h2><p>'+esc(summary)+'</p><span class="topic-bottom">'+materialCount(arts.length)+icon('arrow')+'</span></a>';
     }).join('')+'</div>';
     return html;
   }
