@@ -14,6 +14,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
           curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://media.descriptusercontent.com/v3/proxy/remux?url=https%3A%2F%2Fapi.descript.com%2Fv2%2Fpublished_projects%2Fc0570b77-a02a-4de1-8e3f-a074ffd97b06%2Fhls%3Fexpiration%3D1795421282647%26signature%3Df7f80de70018ba1054ec62628305a2f3da5e79d518a411772411e777edb0257b&filename=V5+base+master.mp4&mediaCacheBucketName=production-273614-media-cache&expiration=1795417683&signature=54a1d8e5a7b4a4b4560f499f0ca9af9ee776a10416bee839d497b8553f8a269f' -o 'base.mp4'
           curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://s3.regru.cloud/doitong/video/grok_video/69fab794325dbb5b836cdda8/grok_video_6b005bdbc868439a8eab10f0_1795196763.mp4' -o 'train.mp4'
           curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://s3.regru.cloud/doitong/video/grok_video/69fab794325dbb5b836cdda8/grok_video_6b005bd5880eebafbcab1206_1795185897.mp4' -o 'ticket.mp4'
