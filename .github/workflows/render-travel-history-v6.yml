@@ -40,5 +40,9 @@ jobs:
           name: Tatakomotako_Travel_History_V6
           path: |
             Tatakomotako_Travel_History_V6_REPAIRED.mp4
+            train.mp4
+            ticket.mp4
+            tea.mp4
+            cocktails.mp4
             shot_*.jpg
           retention-days: 3
