@@ -1,0 +1,23 @@
+name: Fetch Russian narration for Tatakomotako Travel History
+on:
+  push:
+    branches:
+      - render-travel-history-v6-20261122
+permissions:
+  contents: read
+jobs:
+  fetch-voice:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Russian female voiceover from HeyGen
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --connect-timeout 15 --max-time 90 'https://resource2.heygen.ai/text_to_speech/e3197356c9904ba9b720ab982074b714/cb404f2d35334184839c66cbab7937b2/id=9b09640b92e14e2f9798d2fcf21b5042.wav' -o Travel_History_Alisa_RU.wav
+          file Travel_History_Alisa_RU.wav
+          test $(stat -c%s Travel_History_Alisa_RU.wav) -gt 100000
+      - name: Upload voiceover for final local editing
+        uses: actions/upload-artifact@v4
+        with:
+          name: Travel_History_Alisa_RU
+          path: Travel_History_Alisa_RU.wav
+          retention-days: 2
