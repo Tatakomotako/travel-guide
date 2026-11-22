@@ -1,0 +1,42 @@
+name: Travel History Reels V6 - sequential montage
+on:
+  push:
+    branches:
+      - render-travel-history-v6-20261122
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download V5 and all four Doitong scenes
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://media.descriptusercontent.com/v3/proxy/remux?url=https%3A%2F%2Fapi.descript.com%2Fv2%2Fpublished_projects%2Fc0570b77-a02a-4de1-8e3f-a074ffd97b06%2Fhls%3Fexpiration%3D1795421282647%26signature%3Df7f80de70018ba1054ec62628305a2f3da5e79d518a411772411e777edb0257b&filename=V5+base+master.mp4&mediaCacheBucketName=production-273614-media-cache&expiration=1795417683&signature=54a1d8e5a7b4a4b4560f499f0ca9af9ee776a10416bee839d497b8553f8a269f' -o 'base.mp4'
+          curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://s3.regru.cloud/doitong/video/grok_video/69fab794325dbb5b836cdda8/grok_video_6b005bdbc868439a8eab10f0_1795196763.mp4' -o 'train.mp4'
+          curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://s3.regru.cloud/doitong/video/grok_video/69fab794325dbb5b836cdda8/grok_video_6b005bd5880eebafbcab1206_1795185897.mp4' -o 'ticket.mp4'
+          curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://s3.regru.cloud/doitong/video/grok_video/69fab794325dbb5b836cdda8/grok_video_6b005bd7880eebafbcab120a_1795189530.mp4' -o 'tea.mp4'
+          curl --fail --location --retry 4 --retry-delay 3 --connect-timeout 15 --max-time 120 'https://s3.regru.cloud/doitong/video/grok_video/69fab794325dbb5b836cdda8/grok_video_6b005bd9c868439a8eab10ec_1795193146.mp4' -o 'cocktails.mp4'
+          for f in base train ticket tea cocktails; do ffprobe -v error -show_entries format=duration -of default=nk=1:nw=1 "${f}.mp4"; done
+      - name: Render actual sequential video with continuous V5 soundtrack
+        shell: bash
+        run: |
+          set -euo pipefail
+          ffmpeg -hide_banner -y -i base.mp4 -i train.mp4 -i ticket.mp4 -i tea.mp4 -i cocktails.mp4 -filter_complex '[0:v]split=4[b0][b1][b2][b3];[b0]trim=start=0:end=3.2,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[intro];[1:v]trim=start=0:end=3.6,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[train];[b1]trim=start=6.8:end=14.6,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[cook];[2:v]trim=start=0:end=3.8,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[ticket];[3:v]trim=start=0:end=3.2,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[tea];[b2]trim=start=21.6:end=24.9,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[historical];[4:v]trim=start=0:end=4.1,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[cocktails];[b3]trim=start=29:end=30.2666667,setpts=PTS-STARTPTS,fps=30,scale=720:1280,setsar=1[outro];[intro][train][cook][ticket][tea][historical][cocktails][outro]concat=n=8:v=1:a=0[v]' -map '[v]' -map 0:a:0 -t 30.2667 -c:v libx264 -preset veryfast -crf 22 -pix_fmt yuv420p -r 30 -c:a aac -b:a 160k -movflags +faststart -shortest Tatakomotako_Travel_History_V6_REPAIRED.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=nw=1 Tatakomotako_Travel_History_V6_REPAIRED.mp4
+          ffmpeg -y -ss 1 -i Tatakomotako_Travel_History_V6_REPAIRED.mp4 -frames:v 1 shot_01.jpg -loglevel error
+          ffmpeg -y -ss 5 -i Tatakomotako_Travel_History_V6_REPAIRED.mp4 -frames:v 1 shot_05.jpg -loglevel error
+          ffmpeg -y -ss 10 -i Tatakomotako_Travel_History_V6_REPAIRED.mp4 -frames:v 1 shot_10.jpg -loglevel error
+          ffmpeg -y -ss 16 -i Tatakomotako_Travel_History_V6_REPAIRED.mp4 -frames:v 1 shot_16.jpg -loglevel error
+          ffmpeg -y -ss 20 -i Tatakomotako_Travel_History_V6_REPAIRED.mp4 -frames:v 1 shot_20.jpg -loglevel error
+          ffmpeg -y -ss 27 -i Tatakomotako_Travel_History_V6_REPAIRED.mp4 -frames:v 1 shot_27.jpg -loglevel error
+      - name: Store verified MP4 and frame checks
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tatakomotako_Travel_History_V6
+          path: |
+            Tatakomotako_Travel_History_V6_REPAIRED.mp4
+            shot_*.jpg
+          retention-days: 3
