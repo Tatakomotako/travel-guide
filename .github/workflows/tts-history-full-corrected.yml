@@ -10,14 +10,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Install natural Russian neural synthesis
-        run: python -m pip install --quiet edge-tts mutagen
+        run: python -m pip install --quiet gTTS mutagen
       - name: Render complete phrases without shortening
         shell: bash
         run: |
           python - <<'PY'
           import asyncio, json, os
           from mutagen.mp3 import MP3
-          import edge_tts
+          from gtts import gTTS
           PARTS=[["01_hook","Представь: купила тур, мечтаешь о море и коктейлях."],["02_twist","А тебя везут на собрание трезвенников!"],["03_england","Англия. Тысяча восемьсот сорок первый год."],["04_cook","Томас Кук собирает почти пятьсот человек и отправляет их поездом на встречу сторонников трезвости."],["05_ticket","Билет туда и обратно — один шиллинг."],["06_tea","Чай и булочки уже включены!"],["07_legacy","Эта поездка стала одной из самых известных ранних организованных экскурсий."],["08_final","А сегодня мы возмущаемся, если на «всё включено» коктейль недостаточно крепкий! Ну что, поехали бы?"]]
           async def main():
             os.makedirs('voice_parts',exist_ok=True)
