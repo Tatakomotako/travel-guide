@@ -1,0 +1,22 @@
+name: Fetch corrected Tatakomotako intro voice
+on:
+  push:
+    branches:
+      - render-travel-history-v6-20261122
+permissions:
+  contents: read
+jobs:
+  fetch-intro:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download corrected Tatako accent speech
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --connect-timeout 15 --max-time 90 'https://resource2.heygen.ai/text_to_speech/e3197356c9904ba9b720ab982074b714/cb404f2d35334184839c66cbab7937b2/id=b9b264f2c7ff4594a9a24e8f9a5a327f.wav' -o Corrected_Intro.wav
+          test $(stat -c%s Corrected_Intro.wav) -gt 50000
+      - name: Upload corrected intro
+        uses: actions/upload-artifact@v4
+        with:
+          name: Travel_History_Corrected_Intro
+          path: Corrected_Intro.wav
+          retention-days: 2
