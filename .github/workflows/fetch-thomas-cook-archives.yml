@@ -1,0 +1,29 @@
+name: Fetch original historical public domain pictures
+on:
+  push:
+    branches:
+      - render-travel-history-v6-20261122
+permissions:
+  contents: read
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified original images
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --connect-timeout 15 -A 'TatakomotakoTravelHistory/1.0 (historical imagery)' 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Leicester_Campbell_Street_railway_station.jpg' -o 'leicester1840.jpg' 
+          file 'leicester1840.jpg'
+          test $(stat -c %s 'leicester1840.jpg') -gt 20000
+          curl -fsSL --retry 3 --connect-timeout 15 -A 'TatakomotakoTravelHistory/1.0 (historical imagery)' 'https://upload.wikimedia.org/wikipedia/commons/9/90/Portrait_of_Thomas_Cook_%284674343%29.jpg' -o 'cook1880.jpg' 
+          file 'cook1880.jpg'
+          test $(stat -c %s 'cook1880.jpg') -gt 20000
+      - name: Upload historical photographs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Thomas_Cook_1840_1880_Archival_Images
+          path: |
+            leicester1840.jpg
+            cook1880.jpg
+          retention-days: 3
