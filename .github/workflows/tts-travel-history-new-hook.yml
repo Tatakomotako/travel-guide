@@ -1,0 +1,43 @@
+name: Travel History final Russian narration
+on:
+  push:
+    branches: [render-travel-history-v6-20261122]
+permissions:
+  contents: read
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Install Russian neural voice support
+        run: python -m pip install --quiet edge-tts
+      - name: Narrate completed new hook and main story
+        shell: bash
+        run: |
+          python - <<'PY'
+          import asyncio, json, edge_tts
+          TEXT = "Представь: купила тур, мечтаешь о море и коктейлях… А тебя везут на собрание трезвенников! Да-да, именно так. Англия, тысяча восемьсот сорок первый год. Томас Кук собрал почти пятьсот человек и устроил поездку из Лестера в Лафборо — на встречу сторонников трезвости. Билет туда и обратно — один шиллинг. Чай и булочки — включены! Эта экскурсия стала важной вехой организованного туризма. А сегодня мы возмущаемся, если на «всё включено» коктейль недостаточно крепкий. Поехали бы?"
+          VOICE = "ru-RU-SvetlanaNeural"
+          async def main():
+              tts = edge_tts.Communicate(TEXT, VOICE, rate="+12%")
+              sub = edge_tts.SubMaker()
+              with open("narration.mp3", "wb") as f:
+                  async for chunk in tts.stream():
+                      if chunk["type"] == "audio":
+                          f.write(chunk["data"])
+                      elif chunk["type"] == "WordBoundary":
+                          sub.feed(chunk)
+              with open("narration.srt", "w", encoding="utf-8") as f:
+                  f.write(sub.get_srt())
+          asyncio.run(main())
+          
+          PY
+          test $(stat -c%s narration.mp3) -gt 40000
+      - name: Save narration and timing
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tatakomotako_Travel_History_New_Hook_Narration
+          path: |
+            narration.mp3
+            narration.srt
+          retention-days: 2
