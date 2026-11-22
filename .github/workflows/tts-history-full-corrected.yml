@@ -1,0 +1,41 @@
+name: Render corrected complete Russian speech in timed sections
+on:
+  push:
+    branches: [render-travel-history-v6-20261122]
+permissions:
+  contents: read
+jobs:
+  generate-voice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install natural Russian neural synthesis
+        run: python -m pip install --quiet edge-tts mutagen
+      - name: Render complete phrases without shortening
+        shell: bash
+        run: |
+          python - <<'PY'
+          import asyncio, json, os
+          from mutagen.mp3 import MP3
+          import edge_tts
+          PARTS=[["01_hook","Представь: купила тур, мечтаешь о море и коктейлях."],["02_twist","А тебя везут на собрание трезвенников!"],["03_england","Англия. Тысяча восемьсот сорок первый год."],["04_cook","То́мас Кук собирает почти пятьсот человек и отправляет их поездом на встречу сторонников трезвости."],["05_ticket","Билет туда и обратно — один шиллинг."],["06_tea","Чай и булочки уже включены!"],["07_legacy","Эта поездка стала одной из самых известных ранних организованных экскурсий."],["08_final","А сегодня мы возмущаемся, если на «всё включено» коктейль недостаточно крепкий! Ну что, поехали бы?"]]
+          async def main():
+            os.makedirs('voice_parts',exist_ok=True)
+            info=[]
+            for name,line in PARTS:
+              file=f'voice_parts/{name}.mp3'
+              speech=edge_tts.Communicate(line,'ru-RU-DariyaNeural',rate='+5%',pitch='+0Hz')
+              await speech.save(file)
+              length=MP3(file).info.length
+              assert length>0.7,(name,length)
+              info.append({'name':name,'text':line,'duration':length})
+              print(name,round(length,3),flush=True)
+            with open('voice_parts/manifest.json','w',encoding='utf8') as f: json.dump(info,f,ensure_ascii=False,indent=2)
+          asyncio.run(main())
+          PY
+      - name: Deliver audio stems and exact lengths
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tatakomotako_Corrected_Full_Narration
+          path: voice_parts/
+          retention-days: 2
