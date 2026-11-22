@@ -1,0 +1,21 @@
+name: Fetch native English Travel History name
+on:
+  push:
+    branches:
+      - render-travel-history-v6-20261122
+permissions:
+  contents: read
+jobs:
+  fetch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch English speaker phrase
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --connect-timeout 15 --max-time 90 'https://resource2.heygen.ai/text_to_speech/e3197356c9904ba9b720ab982074b714/330290724a1b470fb63153f34d4c0183/id=9d5bd7687719411ba50a8f07b4954b29.wav' -o Travel_History_English.wav
+          test $(stat -c%s Travel_History_English.wav) -gt 10000
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Travel_History_English
+          path: Travel_History_English.wav
+          retention-days: 2
