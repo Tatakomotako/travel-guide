@@ -24,8 +24,7 @@ jobs:
             info=[]
             for name,line in PARTS:
               file=f'voice_parts/{name}.mp3'
-              speech=edge_tts.Communicate(line,'ru-RU-SvetlanaNeural',rate='+8%')
-              await speech.save(file)
+              gTTS(line,lang='ru',slow=False).save(file)
               length=MP3(file).info.length
               assert length>0.7,(name,length)
               info.append({'name':name,'text':line,'duration':length})
